@@ -1,0 +1,77 @@
+{
+  "name": "expressive-ts",
+  "version": "0.0.1",
+  "author": "Maxwell Brown <maxwellbrown1990@gmail.com> (https://github.com/IMax153)",
+  "description": "A functional programming library designed to simplify building complex regular expressions",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "module": "es6/index.js",
+  "typings": "lib/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "lib",
+    "es6"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/IMax153/expressive-ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IMax153/expressive-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/IMax153/expressive-ts/issues"
+  },
+  "scripts": {
+    "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json && import-path-rewrite",
+    "postbuild": "prettier --write \"./{lib,es6}/**/*.ts\"",
+    "import-path-rewrite": "import-path-rewrite",
+    "lint": "eslint",
+    "jest": "jest --ci",
+    "jest-clear-cache": "jest --clearCache",
+    "test": "yarn lint && yarn prettier && yarn jest-clear-cache && yarn jest && yarn docs",
+    "prettier": "prettier --list-different \"./{src,test,examples}/**/*.ts\"",
+    "prepublish": "yarn build",
+    "doctoc": "doctoc README.md --title \"**Table of contents**\"",
+    "docs": "docs-ts"
+  },
+  "peerDependencies": {
+    "fp-ts": "^2.7.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.7",
+    "@types/node": "^14.0.27",
+    "@typescript-eslint/eslint-plugin": "^3.7.1",
+    "@typescript-eslint/parser": "^3.7.1",
+    "docs-ts": "^0.5.1",
+    "doctoc": "^1.4.0",
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-typescript": "^9.0.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "^23.20.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "glob": "^7.1.6",
+    "husky": "^4.2.5",
+    "import-path-rewrite": "github:gcanti/import-path-rewrite",
+    "jest": "^26.2.1",
+    "lint-staged": "^10.2.11",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.1.4",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  },
+  "tags": [
+    "typescript",
+    "functional-programming",
+    "regular-expressions",
+    "regex"
+  ],
+  "keywords": [
+    "typescript",
+    "functional-programming",
+    "regular-expressions",
+    "regex"
+  ]
+}

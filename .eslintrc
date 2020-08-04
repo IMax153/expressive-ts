@@ -1,0 +1,30 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "plugins": ["@typescript-eslint", "import"],
+  "env": {
+    "node": true,
+    "jest": true
+  },
+  "extends": [
+    "airbnb-typescript/base",
+    "plugin:@typescript-eslint/recommended",
+    "prettier/@typescript-eslint",
+    "prettier",
+    "plugin:prettier/recommended",
+    "plugin:jest/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "import/no-cycle": "off",
+    "import/prefer-default-export": "off",
+    "jest/expect-expect": "off",
+    "no-nested-ternary": "off",
+    "no-underscore-dangle": "off"
+  }
+}
