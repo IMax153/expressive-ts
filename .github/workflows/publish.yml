@@ -2,24 +2,33 @@ name: Publish
 
 on:
   release:
-    types: [created]
+    types: [ created ]
+
+  # Allows for running this workflow manually from the GitHub Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [ 14.x ]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup npmrc
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
-          node-version: '12.x'
+          node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
+
       - name: Install dependencies
-        run: yarn
+        run: yarn --frozen-lockfile
 
       - name: Publish package
         run: yarn publish --access public

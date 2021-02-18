@@ -12,9 +12,6 @@
     "lib",
     "es6"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "homepage": "https://github.com/IMax153/expressive-ts",
   "repository": {
     "type": "git",
