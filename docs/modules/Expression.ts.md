@@ -306,7 +306,7 @@ Added in v0.0.1
 export declare const orExpression: Endomorphism<ExpressionBuilder>
 ```
 
-Added in v0.1.1
+Added in v0.0.2
 
 ## range
 
