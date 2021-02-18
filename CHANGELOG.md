@@ -18,3 +18,8 @@
 
 - **New Feature**
   - Initial Release (@IMax153)
+
+# 0.1.1
+
+- **New Feature**
+  - added orExpression (@adeyahya)
