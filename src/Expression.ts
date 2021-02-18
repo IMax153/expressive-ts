@@ -278,6 +278,7 @@ export const string: (value: string) => Endomorphism<ExpressionBuilder> = (value
 export const maybe: (value: string) => Endomorphism<ExpressionBuilder> = (value) => add(`(?:${sanitize(value)})?`)
 
 /**
+ * @deprecated
  * @category combinators
  * @since 0.0.1
  */
@@ -288,7 +289,7 @@ export const or: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
  * @category combinators
  * @since 0.0.1
  */
-export const orMap: Endomorphism<ExpressionBuilder> = add(`|`)
+export const orExpression: Endomorphism<ExpressionBuilder> = add(`|`)
 
 /**
  * @category combinators

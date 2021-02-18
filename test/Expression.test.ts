@@ -82,14 +82,14 @@ describe('Expression', () => {
       })
     })
 
-    describe('orMap', () => {
+    describe('orExpression', () => {
       it('should match unicode regex', () => {
         assert.strictEqual(
           pipe(
             _.compile,
             _.range('a', 'z'),
             _.range('A', 'Z'),
-            _.orMap,
+            _.orExpression,
             _.range('A', 'Z'),
             _.exactly(2),
             _.range('a', 'z'),
