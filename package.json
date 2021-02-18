@@ -1,6 +1,6 @@
 {
   "name": "expressive-ts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Maxwell Brown <maxwellbrown1990@gmail.com> (https://github.com/IMax153)",
   "description": "A functional programming library designed to simplify building complex regular expressions",
   "license": "MIT",

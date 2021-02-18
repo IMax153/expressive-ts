@@ -60,7 +60,7 @@ Added in v0.0.1
   - [not](#not)
   - [oneOrMore](#oneormore)
   - [oneOrMoreLazy](#oneormorelazy)
-  - [or](#or)
+  - [orExpression](#orexpression)
   - [range](#range)
   - [singleLine](#singleline)
   - [something](#something)
@@ -74,6 +74,7 @@ Added in v0.0.1
   - [word](#word)
   - [zeroOrMore](#zeroormore)
   - [zeroOrMoreLazy](#zeroormorelazy)
+  - [~~or~~](#or)
 - [destructors](#destructors)
   - [toRegex](#toregex)
   - [toRegexString](#toregexstring)
@@ -297,15 +298,15 @@ export declare const oneOrMoreLazy: Endomorphism<ExpressionBuilder>
 
 Added in v0.0.1
 
-## or
+## orExpression
 
 **Signature**
 
 ```ts
-export declare const or: (value: string) => Endomorphism<ExpressionBuilder>
+export declare const orExpression: Endomorphism<ExpressionBuilder>
 ```
 
-Added in v0.0.1
+Added in v0.0.2
 
 ## range
 
@@ -433,6 +434,16 @@ Added in v0.0.1
 
 ```ts
 export declare const zeroOrMoreLazy: Endomorphism<ExpressionBuilder>
+```
+
+Added in v0.0.1
+
+## ~~or~~
+
+**Signature**
+
+```ts
+export declare const or: (value: string) => Endomorphism<ExpressionBuilder>
 ```
 
 Added in v0.0.1

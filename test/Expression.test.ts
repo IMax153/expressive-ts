@@ -82,6 +82,24 @@ describe('Expression', () => {
       })
     })
 
+    describe('orExpression', () => {
+      it('should match unicode regex', () => {
+        assert.strictEqual(
+          pipe(
+            _.compile,
+            _.range('a', 'z'),
+            _.range('A', 'Z'),
+            _.orExpression,
+            _.range('A', 'Z'),
+            _.exactly(2),
+            _.range('a', 'z'),
+            _.toRegexString
+          ),
+          '/[a-z][A-Z]|[A-Z]{2}[a-z]/'
+        )
+      })
+    })
+
     describe('anything', () => {
       it('should match anything', () => {
         assert.strictEqual(pipe(_.compile, _.anything, _.toRegexString), '/(?:.*)/')
