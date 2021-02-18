@@ -288,6 +288,12 @@ export const or: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
  * @category combinators
  * @since 0.0.1
  */
+export const orMap: Endomorphism<ExpressionBuilder> = add(`|`)
+
+/**
+ * @category combinators
+ * @since 0.0.1
+ */
 export const anything: Endomorphism<ExpressionBuilder> = add(`(?:.*)`)
 
 /**
