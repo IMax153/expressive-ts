@@ -12,7 +12,6 @@
   "extends": [
     "airbnb-typescript/base",
     "plugin:@typescript-eslint/recommended",
-    "prettier/@typescript-eslint",
     "prettier",
     "plugin:prettier/recommended",
     "plugin:jest/recommended"
