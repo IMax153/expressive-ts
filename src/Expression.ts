@@ -126,9 +126,7 @@ const flagsToChar: Record<keyof Flags, string> = {
   sticky: 'y'
 }
 
-const flagMapper = flow(Lens.fromProp<typeof flagsToChar>(), (a) => a.get(flagsToChar))
-
-const toFlags: (flags: Flags) => string = R.foldMapWithIndex(S.Monoid)((k, v) => (v ? flagMapper(k) : ''))
+const toFlags: (flags: Flags) => string = R.foldMapWithIndex(S.Monoid)((k, v) => (v ? flagsToChar[k] : ''))
 
 /**
  * @category destructors
