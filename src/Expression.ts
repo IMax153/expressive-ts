@@ -117,10 +117,7 @@ export interface Flags {
 // destructors
 // -------------------------------------------------------------------------------------
 
-type FlagKeys = keyof Flags
-type FlagsToChar = Record<FlagKeys, string>
-
-const flagsToChar: FlagsToChar = {
+const flagsToChar: Record<keyof Flags, string> = {
   allowMultiple: 'g',
   caseInsensitive: 'i',
   lineByLine: 'm',
@@ -129,11 +126,9 @@ const flagsToChar: FlagsToChar = {
   sticky: 'y'
 }
 
-const flagMapper = flow(Lens.fromProp<FlagsToChar>(), (a) => a.get(flagsToChar))
+const flagMapper = flow(Lens.fromProp<typeof flagsToChar>(), (a) => a.get(flagsToChar))
 
-const toFlagsStr: (flags: Flags) => string = R.foldMapWithIndex(S.Monoid)((k, v) =>
-  v ? flagMapper(k) : S.Monoid.empty
-)
+const toFlags: (flags: Flags) => string = R.foldMapWithIndex(S.Monoid)((k, v) => (v ? flagMapper(k) : ''))
 
 /**
  * @category destructors
@@ -141,7 +136,7 @@ const toFlagsStr: (flags: Flags) => string = R.foldMapWithIndex(S.Monoid)((k, v)
  */
 export const toRegex: (builder: ExpressionBuilder) => RegExp = (builder) => {
   const expression = builder(monoidExpression.empty)
-  const flags = toFlagsStr(expression.flags)
+  const flags = toFlags(expression.flags)
   return new RegExp(expression.pattern, flags)
 }
 
@@ -158,8 +153,8 @@ export const toRegexString: (builder: ExpressionBuilder) => string = (builder) =
 // -------------------------------------------------------------------------------------
 
 const expressionLens = Lens.fromProp<Expression>()
-const flagsLens = expressionLens('flags')
 const flagsPropLens = Lens.fromProp<Flags>()
+const flagsLens = expressionLens('flags')
 const getWithFlag = <K extends keyof Flags>(flag: K): ((flag: boolean) => (wa: ExpressionBuilder) => Expression) => {
   const flagLens = flagsLens.compose(flagsPropLens(flag))
   return (value: boolean) => {
