@@ -30,7 +30,7 @@ or
 yarn add fp-ts expressive-ts
 ```
 
-**Note**: `fp-ts` is a peer dependency of `expressive-ts`
+**Note**: `fp-ts` and `monocle-ts` are peer dependencies of `expressive-ts`
 
 ## Why?
 

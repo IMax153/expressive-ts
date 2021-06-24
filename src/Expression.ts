@@ -30,9 +30,14 @@
  *
  * @since 0.0.1
  */
-import * as M from 'fp-ts/lib/Monoid'
-import * as T from 'fp-ts/lib/Traced'
-import { identity, Endomorphism, flow } from 'fp-ts/lib/function'
+import * as M from 'fp-ts/Monoid'
+import * as T from 'fp-ts/Traced'
+import * as R from 'fp-ts/Record'
+import * as S from 'fp-ts/string'
+import * as B from 'fp-ts/boolean'
+import * as Reader from 'fp-ts/Reader'
+import { identity, Endomorphism, flow, pipe } from 'fp-ts/function'
+import * as L from 'monocle-ts/Lens'
 
 // -------------------------------------------------------------------------------------
 // models
@@ -113,16 +118,16 @@ export interface Flags {
 // destructors
 // -------------------------------------------------------------------------------------
 
-const toFlags: (flags: Flags) => string = (flags) => {
-  let s = ''
-  s += flags.allowMultiple ? 'g' : ''
-  s += flags.caseInsensitive ? 'i' : ''
-  s += flags.lineByLine ? 'm' : ''
-  s += flags.singleLine ? 's' : ''
-  s += flags.unicode ? 'u' : ''
-  s += flags.sticky ? 'y' : ''
-  return s
+const flagsToChar: Record<keyof Flags, string> = {
+  allowMultiple: 'g',
+  caseInsensitive: 'i',
+  lineByLine: 'm',
+  singleLine: 's',
+  unicode: 'u',
+  sticky: 'y'
 }
+
+const toFlags: (flags: Flags) => string = R.foldMapWithIndex(S.Monoid)((k, v) => (v ? flagsToChar[k] : ''))
 
 /**
  * @category destructors
@@ -146,70 +151,79 @@ export const toRegexString: (builder: ExpressionBuilder) => string = (builder) =
 // pipeables
 // -------------------------------------------------------------------------------------
 
-/**
- * @category pipeables
- * @since 0.0.1
- */
-export const withMultiple: (flag: boolean) => (wa: ExpressionBuilder) => Expression = (flag) => (wa) =>
-  wa({ ...monoidExpression.empty, flags: { ...monoidFlags.empty, allowMultiple: flag } })
+const expressionLens = L.id<Expression>()
+const expressionFlagsLens = pipe(expressionLens, L.prop('flags'))
+const getWithFlag = <K extends keyof Flags>(flag: K): ((flag: boolean) => (wa: ExpressionBuilder) => Expression) => {
+  const flagLens = pipe(expressionFlagsLens, L.prop(flag))
+  return (value: boolean) => {
+    const exp = pipe(monoidExpression.empty, flagLens.set(value))
+    return (wa: ExpressionBuilder) => wa(exp)
+  }
+}
 
 /**
  * @category pipeables
  * @since 0.0.1
  */
-export const withCaseInsensitive: (flag: boolean) => (wa: ExpressionBuilder) => Expression = (flag) => (wa) =>
-  wa({ ...monoidExpression.empty, flags: { ...monoidFlags.empty, caseInsensitive: flag } })
+export const withMultiple: (flag: boolean) => (wa: ExpressionBuilder) => Expression = getWithFlag('allowMultiple')
 
 /**
  * @category pipeables
  * @since 0.0.1
  */
-export const withLineByLine: (flag: boolean) => (wa: ExpressionBuilder) => Expression = (flag) => (wa) =>
-  wa({ ...monoidExpression.empty, flags: { ...monoidFlags.empty, lineByLine: flag } })
+export const withCaseInsensitive: (flag: boolean) => (wa: ExpressionBuilder) => Expression =
+  getWithFlag('caseInsensitive')
 
 /**
  * @category pipeables
  * @since 0.0.1
  */
-export const withSingleLine: (flag: boolean) => (wa: ExpressionBuilder) => Expression = (flag) => (wa) =>
-  wa({ ...monoidExpression.empty, flags: { ...monoidFlags.empty, singleLine: flag } })
+export const withLineByLine: (flag: boolean) => (wa: ExpressionBuilder) => Expression = getWithFlag('lineByLine')
 
 /**
  * @category pipeables
  * @since 0.0.1
  */
-export const withSticky: (flag: boolean) => (wa: ExpressionBuilder) => Expression = (flag) => (wa) =>
-  wa({ ...monoidExpression.empty, flags: { ...monoidFlags.empty, sticky: flag } })
+export const withSingleLine: (flag: boolean) => (wa: ExpressionBuilder) => Expression = getWithFlag('singleLine')
 
 /**
  * @category pipeables
  * @since 0.0.1
  */
-export const withUnicode: (flag: boolean) => (wa: ExpressionBuilder) => Expression = (flag) => (wa) =>
-  wa({ ...monoidExpression.empty, flags: { ...monoidFlags.empty, unicode: flag } })
+export const withSticky: (flag: boolean) => (wa: ExpressionBuilder) => Expression = getWithFlag('sticky')
+
+/**
+ * @category pipeables
+ * @since 0.0.1
+ */
+export const withUnicode: (flag: boolean) => (wa: ExpressionBuilder) => Expression = getWithFlag('unicode')
 
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
 
+const stringConcat = M.concatAll(S.Monoid)
+const doublePipe =
+  <A, B>(f: (a: A) => (a: A) => B) =>
+  (a: A): B =>
+    f(a)(a)
+
+const expressionPropReplacer = (prop: keyof Expression, reader: Reader.Reader<Expression, string[]>) =>
+  doublePipe(flow(reader, stringConcat, pipe(expressionLens, L.prop(prop)).set))
+
 const add: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
-  T.map((e) => ({
-    ...e,
-    source: M.fold(M.monoidString)([e.source, value]),
-    pattern: M.fold(M.monoidString)([e.prefix, e.source, value, e.suffix])
-  }))
+  T.map(
+    flow(
+      expressionPropReplacer('source', (e) => [e.source, value]),
+      expressionPropReplacer('pattern', (e) => [e.prefix, e.source, e.suffix])
+    )
+  )
 
 const prefix: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
-  T.map((e) => ({
-    ...e,
-    prefix: M.fold(M.monoidString)([e.prefix, value])
-  }))
+  T.map(expressionPropReplacer('prefix', (e) => [e.prefix, value]))
 
 const suffix: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
-  T.map((e) => ({
-    ...e,
-    suffix: M.fold(M.monoidString)([value, e.suffix])
-  }))
+  T.map(expressionPropReplacer('suffix', (e) => [value, e.suffix]))
 
 /**
  * @category combinators
@@ -436,24 +450,24 @@ export const endCapture: Endomorphism<ExpressionBuilder> = add(`)`)
  * @category instances
  * @since 0.0.1
  */
-export const monoidFlags: M.Monoid<Flags> = M.getStructMonoid({
-  allowMultiple: M.monoidAny,
-  caseInsensitive: M.monoidAny,
-  lineByLine: M.monoidAny,
-  singleLine: M.monoidAny,
-  sticky: M.monoidAny,
-  unicode: M.monoidAny
+export const monoidFlags: M.Monoid<Flags> = M.struct({
+  allowMultiple: B.MonoidAny,
+  caseInsensitive: B.MonoidAny,
+  lineByLine: B.MonoidAny,
+  singleLine: B.MonoidAny,
+  sticky: B.MonoidAny,
+  unicode: B.MonoidAny
 })
 
 /**
  * @category instances
  * @since 0.0.1
  */
-export const monoidExpression: M.Monoid<Expression> = M.getStructMonoid({
-  prefix: M.monoidString,
-  pattern: M.monoidString,
-  suffix: M.monoidString,
-  source: M.monoidString,
+export const monoidExpression: M.Monoid<Expression> = M.struct({
+  prefix: S.Monoid,
+  pattern: S.Monoid,
+  suffix: S.Monoid,
+  source: S.Monoid,
   flags: monoidFlags
 })
 

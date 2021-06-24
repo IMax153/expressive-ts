@@ -2,9 +2,11 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - master
   pull_request:
-    branches: [ main ]
+    branches:
+      - '**'
 
   # Allows for running this workflow manually from the GitHub Actions tab
   workflow_dispatch:
