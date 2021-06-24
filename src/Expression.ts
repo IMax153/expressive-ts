@@ -35,6 +35,7 @@ import * as T from 'fp-ts/Traced'
 import * as R from 'fp-ts/Record'
 import * as S from 'fp-ts/string'
 import * as B from 'fp-ts/boolean'
+import * as Reader from 'fp-ts/Reader'
 import { identity, Endomorphism, flow, pipe } from 'fp-ts/function'
 import * as L from 'monocle-ts/Lens'
 
@@ -155,7 +156,7 @@ const expressionFlagsLens = pipe(expressionLens, L.prop('flags'))
 const getWithFlag = <K extends keyof Flags>(flag: K): ((flag: boolean) => (wa: ExpressionBuilder) => Expression) => {
   const flagLens = pipe(expressionFlagsLens, L.prop(flag))
   return (value: boolean) => {
-    const exp = flagLens.set(value)(monoidExpression.empty)
+    const exp = pipe(monoidExpression.empty, flagLens.set(value))
     return (wa: ExpressionBuilder) => wa(exp)
   }
 }
@@ -201,19 +202,23 @@ export const withUnicode: (flag: boolean) => (wa: ExpressionBuilder) => Expressi
 // combinators
 // -------------------------------------------------------------------------------------
 
-const propReplacer = (prop: keyof Expression, value: string[]) =>
-  pipe(expressionLens, L.prop(prop)).set(M.concatAll(S.Monoid)(value))
+const expressionPropReplacer =
+  (prop: keyof Expression, reader: Reader.Reader<Expression, string[]>) => (e: Expression) =>
+    pipe(e, pipe(expressionLens, L.prop(prop)).set(pipe(e, reader, M.concatAll(S.Monoid))))
 
 const add: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
-  T.map((e) =>
-    pipe(e, propReplacer('source', [e.source, value]), propReplacer('pattern', [e.prefix, e.source, value, e.suffix]))
+  T.map(
+    flow(
+      expressionPropReplacer('source', (e) => [e.source, value]),
+      expressionPropReplacer('pattern', (e) => [e.prefix, e.source, e.suffix])
+    )
   )
 
 const prefix: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
-  T.map((e) => pipe(e, propReplacer('prefix', [e.prefix, value])))
+  T.map(expressionPropReplacer('prefix', (e) => [e.prefix, value]))
 
 const suffix: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
-  T.map((e) => pipe(e, propReplacer('suffix', [value, e.suffix])))
+  T.map(expressionPropReplacer('suffix', (e) => [value, e.suffix]))
 
 /**
  * @category combinators
