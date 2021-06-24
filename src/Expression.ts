@@ -30,13 +30,13 @@
  *
  * @since 0.0.1
  */
-import * as M from 'fp-ts/lib/Monoid'
-import * as T from 'fp-ts/lib/Traced'
-import * as R from 'fp-ts/lib/Record'
-import * as S from 'fp-ts/lib/string'
-import * as B from 'fp-ts/lib/boolean'
-import { identity, Endomorphism, flow, pipe } from 'fp-ts/lib/function'
-import { Lens } from 'monocle-ts'
+import * as M from 'fp-ts/Monoid'
+import * as T from 'fp-ts/Traced'
+import * as R from 'fp-ts/Record'
+import * as S from 'fp-ts/string'
+import * as B from 'fp-ts/boolean'
+import { identity, Endomorphism, flow, pipe } from 'fp-ts/function'
+import * as L from 'monocle-ts/Lens'
 
 // -------------------------------------------------------------------------------------
 // models
@@ -150,11 +150,10 @@ export const toRegexString: (builder: ExpressionBuilder) => string = (builder) =
 // pipeables
 // -------------------------------------------------------------------------------------
 
-const expressionLens = Lens.fromProp<Expression>()
-const flagsPropLens = Lens.fromProp<Flags>()
-const flagsLens = expressionLens('flags')
+const expressionLens = L.id<Expression>()
+const expressionFlagsLens = pipe(expressionLens, L.prop('flags'))
 const getWithFlag = <K extends keyof Flags>(flag: K): ((flag: boolean) => (wa: ExpressionBuilder) => Expression) => {
-  const flagLens = flagsLens.compose(flagsPropLens(flag))
+  const flagLens = pipe(expressionFlagsLens, L.prop(flag))
   return (value: boolean) => {
     const exp = flagLens.set(value)(monoidExpression.empty)
     return (wa: ExpressionBuilder) => wa(exp)
@@ -202,20 +201,19 @@ export const withUnicode: (flag: boolean) => (wa: ExpressionBuilder) => Expressi
 // combinators
 // -------------------------------------------------------------------------------------
 
+const propReplacer = (prop: keyof Expression, value: string[]) =>
+  pipe(expressionLens, L.prop(prop)).set(M.concatAll(S.Monoid)(value))
+
 const add: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
   T.map((e) =>
-    pipe(
-      e,
-      expressionLens('source').set(M.concatAll(S.Monoid)([e.source, value])),
-      expressionLens('pattern').set(M.concatAll(S.Monoid)([e.prefix, e.source, value, e.suffix]))
-    )
+    pipe(e, propReplacer('source', [e.source, value]), propReplacer('pattern', [e.prefix, e.source, value, e.suffix]))
   )
 
 const prefix: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
-  T.map((e) => pipe(e, expressionLens('prefix').set(M.concatAll(S.Monoid)([e.prefix, value]))))
+  T.map((e) => pipe(e, propReplacer('prefix', [e.prefix, value])))
 
 const suffix: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
-  T.map((e) => pipe(e, expressionLens('suffix').set(M.concatAll(S.Monoid)([value, e.suffix]))))
+  T.map((e) => pipe(e, propReplacer('suffix', [value, e.suffix])))
 
 /**
  * @category combinators
