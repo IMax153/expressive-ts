@@ -202,9 +202,14 @@ export const withUnicode: (flag: boolean) => (wa: ExpressionBuilder) => Expressi
 // combinators
 // -------------------------------------------------------------------------------------
 
-const expressionPropReplacer =
-  (prop: keyof Expression, reader: Reader.Reader<Expression, string[]>) => (e: Expression) =>
-    pipe(e, pipe(expressionLens, L.prop(prop)).set(pipe(e, reader, M.concatAll(S.Monoid))))
+const stringConcat = M.concatAll(S.Monoid)
+const doublePipe =
+  <A, B>(f: (a: A) => (a: A) => B) =>
+  (a: A): B =>
+    f(a)(a)
+
+const expressionPropReplacer = (prop: keyof Expression, reader: Reader.Reader<Expression, string[]>) =>
+  doublePipe(flow(reader, stringConcat, pipe(expressionLens, L.prop(prop)).set))
 
 const add: (value: string) => Endomorphism<ExpressionBuilder> = (value) =>
   T.map(
